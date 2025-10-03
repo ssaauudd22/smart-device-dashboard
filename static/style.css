@@ -1,11 +1,33 @@
-body{
+body {
     font-family: Arial, sans-serif;
     background-color: blanchedalmond;
+    margin: 0;
+    padding: 20px;
     color: #333;
-    text-align: center;
-    padding: 2rem;
 }
 
-h1{
-    color: #0066cc;
+h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+#summary-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    text-align: center;
+    flex: 1;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: #4e79a7;
 }

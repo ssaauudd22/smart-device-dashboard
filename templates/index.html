@@ -9,5 +9,92 @@
         <body>
             <h1>Smart Device Dashboard</h1>
             <p>Welcome! This is where device analytics will appear.</p>
+
+            <!--this is the summary cards for the bar charts-->
+            <div id="summary-cards" style="display: flex; gap: 20px; margin-bottom: 2rem;">
+                <div class="card">
+                    <h2 id="totalPages">0</h2>
+                    <p>Total Pages Printed</p>
+                </div>
+                <div class="card">
+                    <h2 id="averageInk">0%</h2>
+                    <p>Average Ink Level</p>
+                </div>
+                <div class="card">
+                    <h2 id="totalScans">0</h2>
+                    <p>Total Scans</p>
+                </div>
+            </div>
+
+            <canvas id="usageChart" width="400" height="200"></canvas>
+            <canvas id="inkChart" width="400" height="200" style="margin-top: 2rem;"></canvas>
+                
+            <!--This brings chart analytics to the webpage-->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <script>
+                //fetches data from Flask API
+                fetch('/usage')
+                    .then(response => response.json())
+                    //gets all data
+                    .then(json => {
+                        const data = json.data;
+
+                        //extracting all the labels and values
+                        const labels = data.map(item => item.device);
+                        const values = data.map(item => item.pages_printed || item.scans);
+
+                        const ctx = document.getElementById("usageChart").getContext('2d');
+                        const usageChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: "Device analytics",
+                                    data: values,
+                                    backgroundColor: ["#4e79a7", "#f28e2b", "#e15759"]
+                                }]
+                            },
+                            options: {
+                                responsive: true
+                            }
+                        });
+
+                        const inkCtx = document.getElementById("inkChart").getContext("2d");
+                        new Chart(inkCtx, {
+                          type: "pie",
+                          data: {
+                            labels: data.map(d => d.device),
+                            datasets: [{
+                              label: "Ink Levels",
+                              data: data.map(d => d.ink_level || 0),  // fallback if device doesn’t have ink
+                              backgroundColor: ["#4e79a7", "#f28e2b", "#e15759"],
+                            }]
+                          }
+                        });
+                    })
+                    .catch(error => console.error("Error fetching data: ", error));
+            </script>
+            <script>
+                fetch("/usage")
+                    .then(response => response.json())
+                    .then(json => {
+                        const data = json.data;
+
+                        //all the pages printed
+                        const totalPages = data.reduce((sum, item) => sum + (item.pages_printed || 0), 0);
+                        document.getElementById("totalPages").textContent = totalPages;
+
+                        //average ink level (this is only for devices with ink_level)
+                        const inkDevices = data.filter(item => item.ink_level !== undefined);
+                        const averageInk = inkDevices.reduce((sum, item) => sum + item.ink_level, 0) /inkDevices.length;
+                        document.getElementById("averageInk").textContent = Math.round(averageInk) + "%";
+
+                        //total scans
+                        const totalScans = data.reduce((sum, item) => sum + (item.scans || 0), 0);
+                        document.getElementById("totalScans").textContent = totalScans;
+                    })
+                    .catch(error => console.error("Error Fetching Data: ", error));
+            </script>
         </body>
 </html>
